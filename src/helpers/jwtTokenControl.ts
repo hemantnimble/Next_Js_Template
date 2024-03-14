@@ -12,7 +12,7 @@ export const isAuthenticated = async (req: NextRequest) => {
                 return true
             } else {
                 return false
-            }
+            } 
         } catch (err) {
             return false
         }
