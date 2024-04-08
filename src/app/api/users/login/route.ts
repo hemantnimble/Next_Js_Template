@@ -30,10 +30,12 @@ export async function POST(request: NextRequest) {
         }
         //create token
         const token = await jwt.sign(tokenData, process.env.JWT_SECRET!, { expiresIn: "1d" })
-
+        // Remove password from user object
+        const { password: _, ...userInfo } = user.toObject()
         const response = NextResponse.json({
             message: "Login successful",
             success: true,
+            user:userInfo
         })
         response.cookies.set("token", token, {
             httpOnly: true,

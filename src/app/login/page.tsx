@@ -1,13 +1,15 @@
 "use client"
-
 import Link from "next/link"
 import { useForm } from "react-hook-form";
 import { ReactNode } from 'react';
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useDispatch } from "react-redux";
+import { login, getUserInfo } from "@/redux/features/user-slice";
+import { AppDispatch, useAppSelector } from "@/redux/store";
 
 function SignUp() {
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const {
     register,
@@ -16,15 +18,21 @@ function SignUp() {
     reset,
     formState: { errors },
   } = useForm();
+  const userData = useAppSelector((state) => state.userReducer.loggedIn)
 
   async function onSubmit(values: any) {
     try {
-      const response = await axios.post("/api/users/login", values)
-      toast.success("Logged In successfully")
-      reset()
-      router.push("/profile")
+      const response = await dispatch(login(values))
+      await dispatch(getUserInfo())
+      if (response.payload.success) {
+        reset()
+        router.push('/profile/user')
+        toast.success("Logged In successfully")
+      } else {
+        toast.error(response.payload.message)
+      }
     }
-    catch (error) {
+    catch (error: any) {
       console.log(error)
       const err = error as { response?: { data?: { error?: string } } };
       const errorMessage = err.response?.data?.error || "An error occurred. Please try again.";

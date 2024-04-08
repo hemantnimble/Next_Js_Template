@@ -3,9 +3,11 @@
 import Link from "next/link"
 import { useForm } from "react-hook-form";
 import { ReactNode } from 'react';
-import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { UseDispatch, useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
+import { getUserInfo, signUp } from "@/redux/features/user-slice";
 
 function SignUp() {
   const router = useRouter()
@@ -16,13 +18,19 @@ function SignUp() {
     reset,
     formState: { errors },
   } = useForm();
+  const dispatch = useDispatch<AppDispatch>()
 
   async function onSubmit(values: any) {
     try {
-      const response = await axios.post("/api/users/signUp", values)
-      toast.success("Account created successfully")
-      reset()
-      router.push("/profile")
+      const response = await dispatch(signUp(values))
+      await dispatch(getUserInfo())
+      if (response.payload.success) {
+        toast.success("Account created successfully")
+        reset()
+        router.push('/profile/user')
+      } else {
+        toast.error(response.payload.message)
+      }
     }
     catch (error) {
       const err = error as { response?: { data?: { error?: string } } };
